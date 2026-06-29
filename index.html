@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -591,45 +591,47 @@ function renderCatTabs() {
 function renderLibrary() {
   const list = document.getElementById('libList');
   const search = document.getElementById('libSearch').value.toLowerCase();
-  let qs = loadBackupQuestions();
+  const allQs = loadBackupQuestions();
   const promoted = loadPromotedQuestions();
 
-  if (currentCatFilter !== '全部') qs = qs.filter(item => (item.cat || '未分类') === currentCatFilter);
-  if (search) qs = qs.filter(item => item.q.toLowerCase().includes(search));
-  document.getElementById('libCount').textContent = `共 ${qs.length} 题`;
+  document.getElementById('libCount').textContent = `共 ${allQs.length} 题`;
   document.getElementById('libAddForm').style.display = 'none';
 
-  if (qs.length === 0) {
-    list.innerHTML = '<div class="empty-state"><div class="icon">🔍</div>' + (search||currentCatFilter!=='全部' ? '没有匹配的题目' : '题库为空，添加第一道题吧') + '</div>';
-    return;
-  }
-
-  // Get global indices by searching original array
-  const allQs = loadBackupQuestions();
   let html = '';
-  qs.forEach((item) => {
-    const origIdx = allQs.findIndex(x => x.q === item.q && x.opts === item.opts);
-    const opts = item.opts.split(',').map(o => o.trim()).filter(o => o);
-    const isPromoted = promoted.some(p => p.libIdx === origIdx && p.libQuestion === item.q);
+  let visible = 0;
+  allQs.forEach((item, idx) => {
     const cat = item.cat || '未分类';
-    html += `
-      <div class="lib-item" id="lib-item-${origIdx}">
-        <div class="lib-num">#${origIdx + 1}${isPromoted ? '<span class="promoted-badge">已提大</span>' : ''}</div>
+    if (currentCatFilter !== '全部' && cat !== currentCatFilter) return;
+    if (search && !item.q.toLowerCase().includes(search)) return;
+    visible++;
+    const opts = item.opts.split(',').map(o => o.trim()).filter(o => o);
+    const isPromoted = promoted.some(p => p.libIdx === idx && p.libQuestion === item.q);
+    html += `<div class="lib-item" id="lib-item-${idx}">
+        <div class="lib-num">#${idx + 1}${isPromoted ? '<span class="promoted-badge">已提大</span>' : ''}</div>
         <div class="lib-body">
           <div class="lib-q">${item.q}<span class="lib-cat-badge">${cat}</span></div>
           <div class="lib-opts">${opts.slice(0, 8).map(o => `<span class="lib-opt-tag">${o}</span>`).join('')}${opts.length > 8 ? `<span class="lib-opt-tag">+${opts.length - 8} 更多</span>` : ''}</div>
         </div>
         <div class="lib-actions">
-          ${isPromoted ? '<button disabled style="opacity:.5">已提大</button>' : '<button class="promote" onclick="promoteQuestion('+origIdx+')">⬆ 提成大类</button>'}
-          <button onclick="editLibQuestion('+origIdx+')">✏️ 编辑</button>
-          <button class="danger" onclick="deleteLibQuestion('+origIdx+')">🗑 删除</button>
+          ${isPromoted ? '<button disabled style="opacity:.5">已提大</button>' : '<button class="promote" onclick="promoteQuestion('+idx+')">⬆ 提成大类</button>'}
+          <button onclick="editLibQuestion('+idx+')">✏️ 编辑</button>
+          <button class="danger" onclick="deleteLibQuestion('+idx+')">🗑 删除</button>
         </div>
       </div>`;
   });
-  list.innerHTML = html;
-}
 
-function addLibQuestion() {
+  if (visible === 0) {
+    list.innerHTML = '<div class="empty-state"><div class="icon">🔍</div>' + (search || currentCatFilter !== '全部' ? '没有匹配的题目' : '题库为空，添加第一道题吧') + '</div>';
+    if (search || currentCatFilter !== '全部') {
+      document.getElementById('libCount').textContent = `共 ${visible} 题（筛选前 ${allQs.length} 题）`;
+    }
+    return;
+  }
+  list.innerHTML = html;
+  if (currentCatFilter !== '全部' || search) {
+    document.getElementById('libCount').textContent = `共 ${visible} 题 / ${allQs.length} 题`;
+  }
+}function addLibQuestion() {
   const q = document.getElementById('newLibQ').value.trim();
   const opts = document.getElementById('newLibOpts').value.trim();
   const cat = document.getElementById('newLibCat').value;
@@ -788,10 +790,11 @@ function generateInsights(records) {
 function updateTotalStat() { document.getElementById('totalStat').textContent = loadData().length + ' 条记录'; }
 
 // Ensure backup questions exist on first load
-if (!localStorage.getItem('self_explore_backup_qs')) { saveBackupQuestions([...DEFAULT_BACKUP]); }
+if (!localStorage.getItem('self_explore_backup_ver') || localStorage.getItem('self_explore_backup_ver') !== String(BACKUP_VERSION)) { localStorage.setItem('self_explore_backup_ver', String(BACKUP_VERSION)); saveBackupQuestions([...DEFAULT_BACKUP]); }
 
 renderCategories();
 updateTotalStat();
 </script>
 </body>
 </html>
+
