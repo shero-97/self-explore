@@ -613,9 +613,9 @@ function renderLibrary() {
           <div class="lib-opts">${opts.slice(0, 8).map(o => `<span class="lib-opt-tag">${o}</span>`).join('')}${opts.length > 8 ? `<span class="lib-opt-tag">+${opts.length - 8} 更多</span>` : ''}</div>
         </div>
         <div class="lib-actions">
-          ${isPromoted ? '<button disabled style="opacity:.5">已提大</button>' : '<button class="promote" onclick="promoteQuestion('+idx+')">⬆ 提成大类</button>'}
-          <button onclick="editLibQuestion('+idx+')">✏️ 编辑</button>
-          <button class="danger" onclick="deleteLibQuestion('+idx+')">🗑 删除</button>
+          ${isPromoted ? '<button disabled style="opacity:.5">已提大</button>' : '<button class="promote" onclick="promoteQuestion(${idx})">⬆ 提成大类</button>'}
+          <button onclick="editLibQuestion(${idx})">✏️ 编辑</button>
+          <button class="danger" onclick="deleteLibQuestion(${idx})">🗑 删除</button>
         </div>
       </div>`;
   });
@@ -797,4 +797,6 @@ updateTotalStat();
 </script>
 </body>
 </html>
+
+
 
