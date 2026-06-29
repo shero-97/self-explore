@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>多研究你自己 — 自我探索记录站</title>
+<link rel="icon" type="image/jpeg" href="myself-icon.jpg">
+<style>
+:root {
+  --bg: #0f0f0f; --card: #1a1a2e; --card-hover: #222240;
+  --accent: #e94560; --accent-soft: rgba(233,69,96,0.15);
+  --text: #eaeaea; --text-dim: #888; --border: #2a2a4a;
+  --success: #4ade80; --warning: #fbbf24; --info: #60a5fa;
+  --purple: #a78bfa;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system,"PingFang SC","Microsoft YaHei",sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+/* ===== Header ===== */
+.header { position:sticky; top:0; z-index:100; background:rgba(15,15,15,.92); backdrop-filter:blur(16px); border-bottom:1px solid var(--border); padding:16px 24px; display:flex; align-items:center; gap:12px; }
+.header h1 { font-size:18px; font-weight:700; letter-spacing:1px; white-space:nowrap; }
+.header h1 span { color:var(--accent); }
+.header .nav-btn { padding:7px 16px; border-radius:20px; border:1px solid var(--border); background:transparent; color:var(--text); cursor:pointer; font-size:13px; transition:.2s; white-space:nowrap; }
+.header .nav-btn:hover { border-color:var(--accent); color:var(--accent); }
+.header .nav-btn.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+.header .spacer { flex:1; }
+.header .stat-pill { font-size:12px; color:var(--text-dim); background:var(--card); padding:5px 12px; border-radius:12px; border:1px solid var(--border); white-space:nowrap; }
+
+/* ===== Main Layout ===== */
+main { max-width:960px; margin:0 auto; padding:24px 16px 80px; }
+
+/* ===== Category Grid ===== */
+.cat-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:14px; }
+.cat-card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:18px; cursor:pointer; transition:.25s; position:relative; overflow:hidden; }
+.cat-card:hover { background:var(--card-hover); transform:translateY(-2px); border-color:rgba(233,69,96,.35); }
+.cat-card .num { font-size:11px; color:var(--accent); font-weight:700; margin-bottom:6px; }
+.cat-card .q-text { font-size:14.5px; line-height:1.55; font-weight:500; }
+.cat-card .count-badge { position:absolute; top:12px; right:12px; font-size:11px; color:var(--text-dim); background:rgba(255,255,255,.06); padding:3px 10px; border-radius:10px; }
+.cat-card .count-badge.has-record { color:var(--success); background:rgba(74,222,128,.12); }
+
+/* ===== Detail View ===== */
+.detail-view { display:none; }
+.detail-view.show { display:block; animation:fadeIn .3s ease; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+.back-bar { display:flex; align-items:center; gap:12px; margin-bottom:22px; }
+.back-bar .back-btn { background:none; border:none; color:var(--accent); font-size:15px; cursor:pointer; display:flex; align-items:center; gap:6px; }
+.back-bar .back-btn:hover { text-decoration:underline; }
+.back-bar h2 { font-size:17px; line-height:1.4; }
+
+/* ===== Options Area ===== */
+.options-section { margin-top:16px; }
+.section-label { font-size:13px; color:var(--text-dim); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:12px; }
+.option-chip { display:inline-block; padding:9px 18px; margin:5px 5px 5px 0; border:1px solid var(--border); border-radius:22px; font-size:13.5px; cursor:pointer; transition:.2s; user-select:none; }
+.option-chip:hover { border-color:var(--accent); background:var(--accent-soft); }
+.option-chip.selected { background:var(--accent); border-color:var(--accent); color:#fff; }
+.option-chip.other { border-style:dashed; color:var(--info); }
+.option-chip.other:hover, .option-chip.other.selected { border-color:var(--info); background:rgba(96,165,250,.15); color:var(--info); }
+.option-chip.custom { border-style:dotted; color:var(--warning); }
+.option-chip.custom:hover, .option-chip.custom.selected { border-color:var(--warning); background:rgba(251,191,36,.12); color:var(--warning); }
+
+/* ===== Add Custom Option ===== */
+.add-custom-row { display:flex; gap:8px; margin:10px 0 16px; align-items:center; }
+.add-custom-row input { flex:1; background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:9px 14px; color:var(--text); font-size:13px; outline:none; }
+.add-custom-row input:focus { border-color:var(--warning); }
+.add-custom-row button { padding:9px 18px; border-radius:10px; border:1px solid var(--warning); background:transparent; color:var(--warning); cursor:pointer; font-size:13px; }
+.add-custom-row button:hover { background:rgba(251,191,36,.12); }
+
+/* ===== Note & Save ===== */
+.note-area { margin-top:18px; }
+.note-area textarea { width:100%; background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:14px; color:var(--text); font-size:13.5px; resize:vertical; min-height:72px; outline:none; font-family:inherit; line-height:1.6; }
+.note-area textarea:focus { border-color:var(--accent); }
+.save-row { display:flex; gap:10px; margin-top:12px; align-items:center; }
+.save-btn { padding:10px 28px; border-radius:10px; border:none; background:var(--accent); color:#fff; font-size:14px; font-weight:600; cursor:pointer; transition:.2s; }
+.save-btn:hover { filter:brightness(1.15); }
+.save-btn:disabled { opacity:.45; cursor:not-allowed; }
+.save-msg { font-size:12px; color:var(--success); opacity:0; transition:.2s; }
+.save-msg.show { opacity:1; }
+
+/* ===== Records List ===== */
+.records-list { margin-top:24px; }
+.record-item { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:14px 16px; margin-bottom:10px; position:relative; }
+.record-item .r-option { font-weight:600; font-size:14px; color:var(--accent); margin-bottom:4px; }
+.record-item .r-note { font-size:13px; color:var(--text-dim); line-height:1.5; }
+.record-item .r-time { font-size:11px; color:#555; margin-top:6px; }
+.record-item .del-btn { position:absolute; top:10px; right:10px; background:none; border:none; color:#666; cursor:pointer; font-size:16px; padding:4px 8px; border-radius:6px; }
+.record-item .del-btn:hover { color:var(--accent); background:rgba(233,69,96,.1); }
+
+/* ===== Summary Page ===== */
+.summary-page { display:none; }
+.summary-page.show { display:block; animation:fadeIn .3s ease; }
+.profile-card { background:linear-gradient(135deg,var(--card),#1a1a3e); border:1px solid var(--border); border-radius:18px; padding:28px; margin-bottom:20px; }
+.profile-card h3 { font-size:18px; margin-bottom:16px; color:var(--accent); }
+.tag-cloud { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+.personality-tag { padding:6px 14px; border-radius:16px; font-size:12.5px; background:var(--accent-soft); color:var(--accent); border:1px solid rgba(233,69,96,.25); }
+.personality-tag.neutral { background:rgba(96,165,250,.12); color:var(--info); border-color:rgba(96,165,250,.25); }
+.personality-tag.warn { background:rgba(251,191,36,.12); color:var(--warning); border-color:rgba(251,191,36,.25); }
+.insight-block { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px; margin-bottom:14px; }
+.insight-block h4 { font-size:14.5px; margin-bottom:10px; color:var(--info); }
+.insight-block p { font-size:13.5px; line-height:1.7; color:var(--text-dim); }
+.stat-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px; margin-top:16px; }
+.stat-mini { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px; }
+.stat-mini .label { font-size:12px; color:var(--text-dim); margin-bottom:6px; }
+.stat-mini .value { font-size:22px; font-weight:700; color:var(--accent); }
+
+/* ===== Library Page ===== */
+.library-page { display:none; }
+.library-page.show { display:block; animation:fadeIn .3s ease; }
+.lib-toolbar { display:flex; gap:10px; margin-bottom:18px; align-items:center; flex-wrap:wrap; }
+.lib-toolbar input { flex:1; min-width:200px; background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:9px 14px; color:var(--text); font-size:13px; outline:none; }
+.lib-toolbar input:focus { border-color:var(--purple); }
+.lib-toolbar button { padding:9px 16px; border-radius:10px; border:1px solid var(--purple); background:transparent; color:var(--purple); cursor:pointer; font-size:13px; white-space:nowrap; }
+.lib-toolbar button:hover { background:rgba(167,139,250,.12); }
+.lib-toolbar button.accent { border-color:var(--accent); color:var(--accent); }
+.lib-toolbar button.accent:hover { background:rgba(233,69,96,.12); }
+.lib-count { font-size:13px; color:var(--text-dim); margin-bottom:12px; }
+
+.lib-item { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:10px; position:relative; display:flex; align-items:flex-start; gap:12px; }
+.lib-item .lib-num { color:var(--purple); font-weight:700; font-size:12px; min-width:36px; padding-top:2px; }
+.lib-item .lib-body { flex:1; }
+.lib-item .lib-q { font-size:14px; font-weight:500; line-height:1.5; margin-bottom:6px; }
+.lib-item .lib-opts { display:flex; flex-wrap:wrap; gap:4px; }
+.lib-item .lib-opt-tag { font-size:11px; color:var(--text-dim); background:rgba(255,255,255,.05); padding:3px 10px; border-radius:10px; }
+.lib-item .lib-actions { display:flex; gap:6px; margin-left:auto; }
+.lib-item .lib-actions button { background:none; border:1px solid var(--border); border-radius:8px; color:var(--text-dim); cursor:pointer; font-size:12px; padding:5px 10px; transition:.2s; white-space:nowrap; }
+.lib-item .lib-actions button:hover { border-color:var(--purple); color:var(--purple); }
+.lib-item .lib-actions button.promote:hover { border-color:var(--accent); color:var(--accent); }
+.lib-item .lib-actions button.danger:hover { border-color:var(--accent); color:var(--accent); background:rgba(233,69,96,.08); }
+.lib-item .lib-actions button.save-edit { border-color:var(--success); color:var(--success); }
+
+.lib-item.editing .lib-body { display:flex; flex-direction:column; gap:6px; }
+.lib-item.editing .lib-q-edit { width:100%; background:var(--bg); border:1px solid var(--purple); border-radius:8px; padding:8px 12px; color:var(--text); font-size:14px; outline:none; font-family:inherit; }
+.lib-item.editing .lib-opts-edit { width:100%; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:8px 12px; color:var(--text); font-size:12px; outline:none; font-family:inherit; }
+
+.lib-add-form { background:var(--card); border:1px dashed var(--purple); border-radius:14px; padding:20px; margin-bottom:16px; }
+.lib-add-form h3 { font-size:15px; color:var(--purple); margin-bottom:14px; }
+.lib-add-form .form-row { display:flex; gap:8px; margin-bottom:10px; align-items:center; }
+.lib-add-form input { flex:1; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:9px 14px; color:var(--text); font-size:13px; outline:none; }
+.lib-add-form input:focus { border-color:var(--purple); }
+.lib-add-form button { padding:9px 20px; border-radius:8px; border:none; background:var(--purple); color:#fff; cursor:pointer; font-size:13px; }
+.lib-add-form button:hover { filter:brightness(1.1); }
+.lib-add-form .hint { font-size:12px; color:var(--text-dim); }
+
+.promoted-badge { background:rgba(233,69,96,.15); color:var(--accent); font-size:10px; padding:2px 8px; border-radius:8px; margin-left:8px; }
+
+
+/* ===== Category Filter Tabs ===== */
+.cat-tabs { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px; }
+.cat-tab { padding:6px 14px; border-radius:16px; border:1px solid var(--border); background:transparent; color:var(--text-dim); cursor:pointer; font-size:12px; transition:.2s; white-space:nowrap; }
+.cat-tab:hover { border-color:var(--purple); color:var(--purple); }
+.cat-tab.active { background:var(--purple); border-color:var(--purple); color:#fff; }
+.lib-item .lib-cat-badge { font-size:10px; padding:2px 8px; border-radius:8px; margin-left:8px; background:rgba(167,139,250,.12); color:var(--purple); }
+
+/* ===== Empty State ===== */
+.empty-state { text-align:center; padding:48px 20px; color:var(--text-dim); }
+.empty-state .icon { font-size:48px; margin-bottom:12px; }
+
+/* ===== Responsive ===== */
+@media(max-width:600px) {
+  .cat-grid { grid-template-columns:1fr; }
+  .header { padding:12px 16px; flex-wrap:wrap; }
+  .header h1 { font-size:15px; }
+  .lib-item { flex-direction:column; }
+  .lib-item .lib-actions { margin-left:0; margin-top:8px; }  .cat-tabs { overflow-x:auto; flex-wrap:nowrap; padding-bottom:4px; }
+  .cat-tab { flex-shrink:0; }
+
+}
+
+::-webkit-scrollbar { width:6px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <h1>多研究<span>你自己</span></h1>
+  <div class="spacer"></div>
+  <button class="nav-btn active" id="btnExplore" onclick="showPage('explore')">探索</button>
+  <button class="nav-btn" id="btnRecord" onclick="showPage('record')">📋 记录</button>
+  <button class="nav-btn" id="btnLibrary" onclick="showPage('library')">📚 探索库</button>
+  <button class="nav-btn" id="btnSummary" onclick="showPage('summary')">✨ 总结</button>
+  <div class="stat-pill" id="totalStat">0 条记录</div>
+</header>
+
+<main>
+  <!-- Explore Page -->
+  <div id="pageExplore">
+    <div class="cat-grid" id="catGrid"></div>
+  </div>
+
+  <!-- Detail View -->
+  <div class="detail-view" id="detailView">
+    <div class="back-bar">
+      <button class="back-btn" onclick="goBack()">← 返回</button>
+      <h2 id="detailQ"></h2>
+    </div>
+    <div class="options-section">
+      <div class="section-label">选择你的回答（可多选）</div>
+      <div id="optionsArea"></div>
+    </div>
+    <div class="add-custom-row">
+      <input type="text" id="customInput" placeholder="添加自定义选项..." onkeydown="if(event.key==='Enter')addCustomOption()">
+      <button onclick="addCustomOption()">+ 添加</button>
+    </div>
+    <div class="note-area">
+      <textarea id="noteInput" placeholder="写下你的想法、感受、备注..."></textarea>
+      <div class="save-row">
+        <button class="save-btn" id="saveBtn" onclick="saveRecord()">💾 保存这条记录</button>
+        <span class="save-msg" id="saveMsg">已保存！</span>
+      </div>
+    </div>
+    <div class="records-list" id="recordsList"></div>
+  </div>
+
+  <!-- Record Page -->
+  <div class="summary-page" id="pageRecord">
+    <h3 style="margin-bottom:18px;font-size:17px;">📋 全部记录</h3>
+    <div id="allRecordsList"></div>
+  </div>
+
+  <!-- Library Page -->
+  <div class="library-page" id="pageLibrary">
+    <h3 style="margin-bottom:4px;font-size:17px;">📚 自我探索库</h3>
+    <p style="color:var(--text-dim);font-size:13px;margin-bottom:16px;">94 道备用题库 + 自定义题目。可增删改，提成大类的题目会出现在探索页直接使用。</p>
+
+    <div class="lib-add-form" id="libAddForm">
+      <h3>＋ 添加新题目</h3>
+      <div class="form-row">
+        <input type="text" id="newLibQ" placeholder="输入新问题...">
+      </div>
+      <div class="form-row">
+        <input type="text" id="newLibOpts" placeholder="选项（用逗号分隔，如：选项A,选项B,选项C）">
+      </div>
+      <div class="form-row">
+        <select id="newLibCat" style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 14px;color:var(--text);font-size:13px;outline:none;">
+          <option value="未分类">分类：未分类</option>
+          <option value="基础认知">基础认知</option>
+          <option value="行为习惯">行为习惯</option>
+          <option value="情绪思维">情绪思维</option>
+          <option value="价值观与选择">价值观与选择</option>
+          <option value="关系与互动">关系与互动</option>
+          <option value="恐惧与阴影">恐惧与阴影</option>
+          <option value="潜能与使命">潜能与使命</option>
+          <option value="存在与本质">存在与本质</option>
+        </select>
+        <button onclick="addLibQuestion()">添加</button>
+      </div>
+      <div class="hint">💡 选项用逗号分隔，如 "咖啡,茶,白水"。别忘了选分类！</div>
+    </div>
+
+    <div class="cat-tabs" id="catTabs"></div>
+    <div class="lib-toolbar">
+      <input type="text" id="libSearch" placeholder="搜索题目关键词..." oninput="renderLibrary()">
+      <button class="accent" onclick="document.getElementById('libAddForm').style.display=document.getElementById('libAddForm').style.display==='none'?'block':'none'" style="border-color:var(--purple);color:var(--purple);">＋ 新题目</button>
+      <span class="lib-count" id="libCount"></span>
+    </div>
+    <div id="libList"></div>
+  </div>
+
+  <!-- Summary Page -->
+  <div class="summary-page" id="pageSummary">
+    <div class="profile-card">
+      <h3>🧠 你的个性画像</h3>
+      <div class="tag-cloud" id="personalityTags"></div>
+      <p id="profileDesc" style="font-size:14px;line-height:1.7;color:var(--text-dim);margin-top:12px;"></p>
+    </div>
+    <div class="stat-grid" id="summaryStats"></div>
+    <div id="insightsArea"></div>
+  </div>
+</main>
+
+<script>
+// ========== DATA ==========
+const QUESTIONS = [
+  { id:1, q:"什么样的早餐/作息，能让你一整上午都精力在线？", options:["豆浆油条/包子 + 7点起床","咖啡+三明治 + 8点左右起","不吃早餐 / 起得很晚","自制营养餐（鸡蛋/燕麦/牛奶）","随缘，有什么吃什么","必须吃热的，温热的东西才舒服","轻断食 / 黑咖啡搞定","早餐要丰盛，午餐可以随意"] },
+  { id:2, q:"做哪件事时，你会完全忘记刷手机、进入忘我的心流状态？", options:["写代码 / 解决技术问题","画画 / 设计 / 做手工","阅读 / 看书入迷","打游戏 / 打竞技类游戏","运动 / 跑步 / 健身","做饭 / 研究菜谱","整理房间 / 断舍离","听音乐发呆 / 散步","深度聊天 / 和朋友聊通宵"] },
+  { id:3, q:"你最舒服的社交距离是什么？不勉强自己陪笑脸的边界在哪里？", options:["亲密朋友随便来，陌生人别靠近","能线上解决就不见面","喜欢小圈子（3-5人）聚会","一个人待着最舒服","社交场合能应付但不享受","需要定期独处充电","在熟人面前话痨，生人面前社恐","表面社交达人，内心只想回家"] },
+  { id:4, q:"你的钱花在哪种地方，会让你觉得「这钱花得值」？", options:["好吃的餐厅 / 点外卖不心疼","电子产品 / 数码装备","旅行 / 出去看世界","买课学习 / 书籍 / 知识付费","衣服 / 鞋子 / 形象管理","给家人朋友买东西","体验类：演唱会/展览/演出","投资理财 / 存钱最有安全感","游戏 / 充值皮肤道具","居家用品 / 提升生活质量的小东西"] },
+  { id:5, q:"别人夸你的话里，哪些评价是你真心受用、不是客套话？", options:["「你很靠谱」— 行动力被认可","「你有品味」— 审美被认可","「你很聪明」— 智力被认可","「你人很好」— 性格被认可","「你很搞笑」— 幽默感被认可","「你很努力」— 态度被认可","「你很特别」— 独特性被认可","「你很冷静」— 情绪稳定被认可","其实不太在意别人的评价","只在乎亲近的人怎么说"] },
+  { id:6, q:"你最擅长解决什么问题？哪怕很小，也是你的专属竞争力。", options:["帮别人理清思路 / 出谋划策","技术问题 / 排查bug","情绪安抚 / 当倾听者","找资源 / 人脉广信息灵通","执行落地 / 把想法变成现实","审美搭配 / 选礼物/穿搭","数据分析 / 理财规划","做饭好吃 / 生活技能满点","写作表达 / 把事情说清楚","危机处理 / 遇事不慌"] },
+  { id:7, q:"做内容/搞事业时，哪种方向让你不内耗，反而越做越爽？", options:["纯创作 / 写作/画图/做视频","技术实现 / 写代码/搭系统","与人打交道 / 销售/运营/沟通","研究分析 / 找规律/做决策","动手做事 / 不喜欢空谈","独立完成 / 不喜欢协作开会","带团队 / 喜欢推动别人","自由职业 / 不想被管理","稳定工作 / 求稳不求变","创业折腾 / 喜欢不确定性"] },
+  { id:8, q:"你最怕的，是努力没结果，还是没试过就放弃？", options:["怕努力没结果 — 白费的感觉太难受","怕没试过就放弃 — 会后悔一辈子","两个都怕，但更怕前者","两个都怕，但更怕后者","都不怕，结果不重要过程重要","看情况，有些事值得赌一把","已经学会接受两种可能了","更怕让身边的人失望"] },
+  { id:9, q:"过去几年里，你靠自己的努力，做成过哪件以前不敢想的事？", options:["学会了新技能（编程/语言/驾照等）","还清了一笔债 / 存下了第一笔钱","换了一份更好的工作 / 跳槽成功","结束了一段不健康的关系","完成了某个重要项目 / 学业目标","开始坚持运动 / 减重成功","独自旅行 / 第一次出远门","买了房 / 买了车 / 租了满意的房子","帮助家人解决了大问题","还在努力中，还没到「做成」的那一步"] },
+  { id:10, q:"哪种批评会让你玻璃心？哪种建议你能坦然接受、甚至立刻调整？", options:["玻璃心：能力被质疑 / 「你不行」","玻璃心：性格被评价 / 「你太敏感」","玻璃心：外貌/外表相关","玻璃心：付出不被认可","都能接受，我脸皮挺厚的","接受：具体可操作的建议","接受：来自信任的人的反馈","接受：对事不对人的意见","都很难受，但会偷偷改","取决于当时的心情状态"] },
+  { id:11, q:"独处时，你最想做什么？是看书、发呆，还是打磨新技能？", options:["刷手机 / 刷视频停不下来","看电影 / 追剧 / 看综艺","听音乐 / 播客放空","看书 / 学习新知识","打游戏 / 沉浸式娱乐","整理收纳 / 打扫卫生","写日记 / 回顾反思","研究兴趣爱好（手工/乐器等）","睡觉 / 补觉 / 发呆","运动 / 出门走走"] },
+  { id:12, q:"你想搞💰的根本动力，是想证明自己，还是想给生活多一份底气？", options:["证明自己 — 让看不起我的人闭嘴","证明自己 — 达成某种成就标准","给生活底气 — 不用为钱焦虑","给生活底气 — 给家人好的生活","纯粹喜欢赚钱的过程本身","想要自由 — 钱等于选择权","想要安全感 — 存钱让我安心","没仔细想过，就是觉得该赚钱","够用就好，不想为了钱牺牲太多","两者都有，不同阶段侧重不同"] },
+  { id:13, q:"什么事会让你突然情绪崩盘？找到它，提前给自己打预防针。", options:["被误解 / 冤枉说不清楚","连续加班 / 身体透支","感情问题 / 被拒绝/被冷落","看到别人过得比自己好太多","计划被打乱 / 失控感","回忆涌上来 / 触景生情","身体不舒服 / 病痛/失眠","经济压力 / 钱不够用","孤独感突然袭来","好像没什么大事，就是突然崩溃"] },
+  { id:14, q:"情绪低落时，除了硬扛，还有哪些事能让你快速回血？", options:["大吃一顿 / 碳水化合物治愈","睡觉 / 睡一觉就好了","找朋友倾诉 / 吐槽发泄","运动出汗 / 跑步/健身","看搞笑视频 / 刷沙雕内容","听音乐 / 特定的歌单","洗澡 / 泡澡放松","出门散步 / 换个环境","写下来 / 日记/备忘录","什么都不做，允许自己丧一会儿"] },
+  { id:15, q:"你最欣赏自己身上的哪一点？哪怕是「从不拖欠作业」这种小事。", options:["有韧性 / 跌倒了能爬起来","善良 / 对人真诚","聪明 / 学东西快","有趣 / 能逗笑自己和别人","自律 / 说到的能做到","直觉准 / 第六感强","适应力强 / 到哪都能活","审美在线 / 有品位","情绪稳定 / 不轻易崩溃","诚实 / 不骗人包括自己","还在寻找中，暂时没发现..."] },
+  { id:16, q:"你想成为别人口中什么样的人？靠谱？清醒？还是自带光芒？", options:["靠谱 — 说到做到的人","清醒 — 看得通透不随大流","自带光芒 — 别人自然被吸引","有钱 — 经济自由的人","温柔 — 让人感到温暖","厉害 — 在某领域有话语权","自由 — 不被任何人定义","快乐 — 真正开心的人","普通 — 平凡但幸福就够了","无所谓别人怎么看我"] },
+  { id:17, q:"你理想中的「搞💰」，是月入过万的数字，还是能自由支配时间的松弛？", options:["数字优先 — 月入越高越好","时间优先 — 钱够用就行要自由","平衡 — 钱和时间都要","被动收入 — 睡后也有进账","做自己喜欢的事顺便赚钱","还没想清楚理想状态","只要不穷到焦虑就行","想财务完全自由","想有一份稳定的工作慢慢来","想创业当老板"] },
+  { id:18, q:"你最想和过去的自己说一句什么话？原谅她，也肯定她。", options:["辛苦了，你已经做得很好了","别那么怕，没那么多人看你","多爱自己一点，少讨好别人","那些眼泪不会白流的","谢谢你当初没有放弃","别再纠结那些选择了对错了","你比你以为的要强大","慢一点也没关系","对不起，以前对你太苛刻了","未来会好的，相信我"] },
+  { id:19, q:"这辈子，你最不想留下的遗憾是什么？", options:["没有好好陪伴家人","没有勇敢追求喜欢的人","没有去做真正想做的事","没有活成自己想要的样子","浪费了太多时间在不值得的人和事上","没有保护好身体健康","没有去看看更大的世界","没有学会真正地爱自己","没有留下什么作品或痕迹","不想留任何遗憾，尽力就好"] },
+  { id:20, q:"往后的日子里，你想过怎样的生活？是事业稳步向上，还是兼顾热爱与烟火气？", options:["事业第一 — 先立业再谈其他","平衡派 — 工作和生活都要好","热爱优先 — 做自己喜欢的事","烟火气 — 家人闲坐灯火可亲","自由自在 — 不被任何东西绑定","简单朴素 — 降低欲望减少焦虑","精彩丰富 — 多尝试多体验","稳定安逸 — 小确幸就很好","还没想清楚未来的样子","走一步看一步，不强求规划"] }
+];
+
+// Default backup questions
+const DEFAULT_BACKUP = [
+  // === Level 0: 基础客观认知（建立自我档案）===
+  { q:"你的全名是？名字的由来或含义？", opts:"据我所知就是这个名字,有特殊含义/纪念意义,长辈随意取的,自己改过名字,很喜欢自己的名字,没什么感觉", cat:"基础认知" },
+  { q:"你的出生日期、年龄？", opts:"90后,00后,80后,95后,85后,其他年代", cat:"基础认知" },
+  { q:"你的身高、体重、体型基础身体数据？", opts:"偏瘦,标准,偏胖,正在减重中,正在增肌中,不太在意这些", cat:"基础认知" },
+  { q:"你的血型/星座/MBTI类型？", opts:"INTJ,INTP,ENTJ,ENTP,INFJ,INFP,ENFJ,ENFP,ISTJ,ISFJ,ESTJ,ESFJ,ISTP,ISFP,ESFP,ESTP,不知道/没测过", cat:"基础认知" },
+  { q:"你现在的居住城市是？想住在哪里？", opts:"一线城市（北上广深）,新一线（杭州/成都等）,二线城市,三四线/县城,想搬去更大的城市,想搬到更慢节奏的地方,满意现在不打算搬", cat:"基础认知" },
+  { q:"你的职业/工作内容？最喜欢的职业？", opts:"互联网/技术,金融/咨询,教育/科研,医疗/健康,媒体/创意,制造业/工程,自由职业/创业,学生,正在寻找方向", cat:"基础认知" },
+  { q:"你的教育背景（学校/专业）？", opts:"本科毕业,硕士及以上,大专/专科,高中及以下,在读中,对学历满意,想继续深造", cat:"基础认知" },
+  { q:"你的婚姻/恋爱状态？", opts:"单身且享受,单身但想脱单,恋爱中,已婚,已婚有娃,不想讨论这个问题", cat:"基础认知" },
+  { q:"你每天早上几点起床？", opts:"6点前,6-7点,7-8点,8-9点,9-10点,10点以后,看心情/不固定", cat:"基础认知" },
+  { q:"你每天必做的3件例行公事是？", opts:"喝咖啡/茶,刷手机看消息,锻炼/拉伸,写日记/复盘,冥想/深呼吸,看天气预报,遛宠物,听音乐/播客", cat:"基础认知" },
+  { q:"你常用的社交媒体平台？", opts:"微信,抖音,小红书,微博,B站,知乎,Instagram,Twitter/X,不用/很少刷", cat:"基础认知" },
+  { q:"你最近购买的非必需品是什么？", opts:"衣服/鞋子,数码产品,书/课程,零食/饮品,游戏/娱乐,装饰品/收纳,运动装备,好久没买过非必需品了", cat:"基础认知" },
+  { q:"你最喜欢的颜色/食物/季节/音乐类型？", opts:"黑色系,白色系,红色/粉色系,蓝色系,绿色系,黄色/橙色系,什么颜色都行看搭配", cat:"基础认知" },
+  { q:"你最喜欢的电影/书籍/艺术作品？", opts:"科幻/奇幻,爱情/文艺,悬疑/推理,喜剧,纪录片,动画,战争/历史,恐怖/惊悚", cat:"基础认知" },
+  { q:"你最常穿的服装风格？", opts:"简约基础款,街头潮流风,日系/韩系,正式商务,休闲运动,复古vintage,暗黑系,不看风格舒服就行", cat:"基础认知" },
+  { q:"你手机里使用频率最高的3个APP？", opts:"微信,抖音,小红书,B站,微博,知乎,淘宝/京东,网易云/QQ音乐", cat:"基础认知" },
+  { q:"你最擅长的3项技能是？", opts:"写作/表达,编程/技术,沟通/说服,设计/审美,组织/管理,烹饪/家务,运动/体能,还没有找到最擅长的", cat:"基础认知" },
+  { q:"你完全不擅长的1件事是？", opts:"数学/计算,运动/体育,社交/聊天,手工/动手,做饭,唱歌/音乐,方向感/认路,记不住人名和脸", cat:"基础认知" },
+  { q:"你最想拥有哪种才能？", opts:"过目不忘的记忆力,学好一门新语言,能说会道/演讲,会一门乐器,编程能力,超强执行力,共情能力,会画画/设计", cat:"基础认知" },
+  // === Level 1: 行为与习惯 ===
+  { q:"你如何度过一个完全自由的周末？", opts:"睡到自然醒然后躺平,约朋友出去吃喝玩乐,宅家追剧打游戏,户外活动/爬山/骑行,学习/自我提升,打扫整理/做饭,混合型看状态", cat:"行为习惯" },
+  { q:"你最近一次'浪费时间'做了什么？", opts:"刷短视频停不下来,打游戏打到忘记时间,发呆/放空,反复纠结一件事,等一个不想等的人,追剧/追小说,逛淘宝/购物", cat:"行为习惯" },
+  { q:"你最近一次开怀大笑是因为什么？", opts:"朋友讲了个好笑的,刷到沙雕视频,看到搞笑内容,宠物做了蠢事,自娱自乐笑了,很久没开怀大笑了", cat:"行为习惯" },
+  { q:"你家里最珍贵的1件物品是？", opts:"家人送的礼物/信物,宠物,自己挣的第一个大件（电脑/车等）,照片/相册/回忆,书/某件收藏,没有特别珍贵的东西", cat:"行为习惯" },
+  { q:"你最常用的口头禅是什么？", opts:"挺好的/还行,那没事了/算了,真的假的,烦死了/好累,可以可以/牛的,好像没什么口头禅", cat:"行为习惯" },
+  { q:"你坚持最久的习惯是什么？", opts:"每天刷牙洗脸（基础护理）,记账,运动健身,阅读,写日记/复盘,早起,坚持追更/打卡,好像没什么坚持下来的习惯", cat:"行为习惯" },
+  { q:"你最近一次熬夜是为了什么？", opts:"工作/赶deadline,打游戏/追剧,失眠睡不着,和朋友聊天/出去玩,学习/备考,单纯不想睡（报复性熬夜）", cat:"行为习惯" },
+  { q:"你每月最大的固定支出？", opts:"房租/房贷,餐饮/外卖,购物/网购,交通/出行,社交/应酬,学习/课程,储蓄/投资,数码产品订阅", cat:"行为习惯" },
+  { q:"你习惯如何应对压力？", opts:"吃东西/暴饮暴食,购物/下单,运动/出汗,找人倾诉,沉默/自己消化,睡觉,听音乐/看电影转移注意,喝酒/熬夜", cat:"行为习惯" },
+  // === Level 2: 情绪与思维 ===
+  { q:"最近一次流泪是因为什么？", opts:"感动的事情,委屈/伤心,压力太大崩溃,看到电视剧/电影哭了,跟人吵架,身体疼痛,忘记了/不记得", cat:"情绪思维" },
+  { q:"当别人批评你时，你的第一反应是什么？", opts:"愤怒反驳,沉默消化,立即改正,表面接受内心不服,分析对方说的对不对,笑一笑过去", cat:"情绪思维" },
+  { q:"什么事情会让你立即进入防御状态？", opts:"被指责/追责,被提起过去的失败,有人质疑我的能力,被拿来和别人比较,隐私被侵犯,讨论我的家庭/出身", cat:"情绪思维" },
+  { q:"你隐藏真实情绪的常用方式是什么？", opts:"开玩笑/幽默化解,转移话题,假装没事,独处消化,写下来/发备忘录,直接说出来藏不住", cat:"情绪思维" },
+  { q:"你是否有'过度补偿'行为？", opts:"有，自卑时反而更强势,有，不开心时反而更活跃健谈,有，缺什么就炫耀什么,不太确定,完全没有", cat:"情绪思维" },
+  { q:"哪种情绪让你最不舒服？", opts:"羞耻/尴尬,愤怒/暴躁,悲伤/难过,焦虑/不安,嫉妒/不甘,孤独/空虚,愧疚/自责", cat:"情绪思维" },
+  { q:"你如何看待自己的负面情绪？", opts:"尽量压抑/不理它,接纳它但不想沉浸其中,允许自己难过但不让它控制行动,负面情绪是信号值得关注,还没学会和负面情绪相处", cat:"情绪思维" },
+  { q:"你有哪些'情绪急救'的小方法？", opts:"深呼吸/冥想,洗把冷水脸,出门走一走,给特定的人打电话,听某首歌,写下来/打字发泄,大声喊出来,没有什么特别的方法", cat:"情绪思维" },
+  { q:"什么事情会让你感到'能量充沛'？", opts:"运动完后,学会新东西后,帮助别人后,被认可/夸奖后,独处充电后,和喜欢的人在一起时,完成重要任务后", cat:"情绪思维" },
+  { q:"何时何地会让你感到最快乐？", opts:"和家人在一起,和朋友聚会,一个人旅行/探索,在大自然里,投入自己的爱好中,安静地看书/喝茶,在工作中获得成就感,收到礼物/惊喜", cat:"情绪思维" },
+  // === Level 3: 价值观与选择 ===
+  { q:"你愿意为什么事放弃金钱？", opts:"健康,家人,自由时间,梦想/热爱,原则/底线,正义/公平,知识/成长,什么都不换", cat:"价值观与选择" },
+  { q:"你最不能容忍的三种行为是？", opts:"欺骗/背叛,不守信用,自私自利,虚伪做作,歧视偏见,不负责任,暴力伤害,不尊重他人", cat:"价值观与选择" },
+  { q:"你最看重朋友的什么特质？", opts:"忠诚/可靠,真诚/不虚伪,有趣/幽默,聪明/有见识,善良/有同理心,独立/不依附,能一起成长", cat:"价值观与选择" },
+  { q:"你最近一次违背自己原则是什么时候？", opts:"为了不得罪人让步,为了工作/钱妥协,为了不伤害别人说了违心话,因为懒/怕麻烦,不记得了/很久没有违背过", cat:"价值观与选择" },
+  { q:"你如何定义'成功'？", opts:"赚很多钱,有社会地位,做自己喜欢的事,家庭幸福,内心平静,帮助了很多人,自由自在,持续成长中", cat:"价值观与选择" },
+  { q:"如果只能教给孩子一件事，你会教什么？", opts:"善良/做对的人,独立思考/不盲从,爱自己/自尊自爱,努力/坚持,学会拒绝/设立边界,保护自己/生存技能,诚实/正直", cat:"价值观与选择" },
+  { q:"你认为哪种美德是被过高评价的？", opts:"无私/牺牲,勤奋/加班,宽容/原谅,服从/听话,节俭/省钱,乐观/正能量,没有什么是被高估的", cat:"价值观与选择" },
+  { q:"你相信'人性本善'还是'人性本恶'？", opts:"人性本善,人性本恶,一半善一半恶,取决于环境和教育,没有纯粹的善恶", cat:"价值观与选择" },
+  { q:"你是否有坚定但无法证明的信念？", opts:"有，相信努力一定会有回报,有，相信好人会有好报,有，相信一切都是最好的安排,有，但说不清是什么,没有这类信念", cat:"价值观与选择" },
+  { q:"你宁愿做'正确的事'还是'快乐的事'？", opts:"正确的事优先,快乐的事优先,尽量平衡,看情况/看后果严重程度,现在更倾向快乐的事了", cat:"价值观与选择" },
+  // === Level 4: 关系与互动 ===
+  { q:"你在关系中更扮演什么角色？", opts:"拯救者（总想帮别人）,受害者（总觉得委屈）,旁观者（不愿卷入）,协调者（两边安抚）,领导者（主导方向）,跟随者（配合就好）", cat:"关系与互动" },
+  { q:"你最容易为什么类型的人吸引？", opts:"聪明有才华的,幽默有趣的,温柔体贴的,独立强大的,神秘难懂的,阳光开朗的,成熟稳重的,和自己很像的,和自己互补的", cat:"关系与互动" },
+  { q:"你最想说出口的一句话是什么？", opts:"我需要你/别离开我,我错了/对不起,谢谢你,我真的很累了,你可不可以理解我一次,有太多话想说说不出口", cat:"关系与互动" },
+  { q:"你习惯如何处理冲突？", opts:"冷战/回避,理性讲道理,直接吵出来,妥协退让,用幽默化解,寻求第三方调解", cat:"关系与互动" },
+  { q:"你从原生家庭继承的最好和最糟特质？", opts:"最好的：善良,最好的：坚韧/能吃苦,最好的：幽默感,最好的：责任心,最糟的：容易焦虑,最糟的：不会表达爱,最糟的：控制欲,最糟的：不自信", cat:"关系与互动" },
+  { q:"你最近一次真诚道歉是什么时候？", opts:"上周/最近几天,这个月内,几个月前,很久没道歉过了（没犯错/没机会）,不擅长道歉/道了但不够真诚", cat:"关系与互动" },
+  { q:"你收到过最用心的礼物是什么？", opts:"DIY手工礼物,一封长信/卡片,精心准备的一顿饭,一直想要却舍不得买的东西,一张带我去某个地方的机票/门票,好像还没收到过特别用心的礼物", cat:"关系与互动" },
+  { q:"你是否曾在关系中讨好或控制对方？", opts:"是的，曾经讨好过,是的，曾经控制过,两者都有过,没有过/意识到就改了,不确定是不是做过", cat:"关系与互动" },
+  { q:"你最近一次向别人求助是什么时候？", opts:"最近一周,最近一个月,几个月前,很久没有求助过了,从不找人帮忙/自己扛,想求助但开不了口", cat:"关系与互动" },
+  { q:"你这一生中最伟大的爱是谁/什么？", opts:"妈妈/爸爸,伴侣/恋人,某个朋友,自己的孩子,宠物,自己/对自己的爱,某种热爱/事业/信仰", cat:"关系与互动" },
+  // === Level 5: 恐惧与阴影 ===
+  { q:"你最大的恐惧是什么？", opts:"失败/一事无成,孤独终老,失去亲人,生病/死亡,贫穷,被抛弃/被否定,平庸度过一生,未知/不确定", cat:"恐惧与阴影" },
+  { q:"什么情况下你会崩溃？", opts:"连续压力太大,感情崩溃,工作出大错,被最信任的人伤害,看到在意的人受苦,身体撑不住了,安静下来的时候突然崩溃", cat:"恐惧与阴影" },
+  { q:"你是否有不愿承认的欲望？", opts:"想要被所有人喜欢/认可,想要比身边人都过得好,想要控制一切/掌控感,想要逃离现在的生活,想要报复某人/某事,没有什么不愿承认的欲望", cat:"恐惧与阴影" },
+  { q:"你能否接受'你并不特别'这件事？", opts:"早就接受了自己是普通人,还在挣扎/不甘心,不需要接受/我就是特别的,没想过这个问题,接受了自己普通但依然努力活着", cat:"恐惧与阴影" },
+  { q:"你对自己的外表哪一点不满意？", opts:"体重/身材,皮肤,身高,五官某处,头发,已经满意了/不纠结外形,不太在意外表", cat:"恐惧与阴影" },
+  { q:"你最恨自己哪些特质？", opts:"拖延/懒,敏感/脆弱,自卑/不自信,优柔寡断/犹豫,脾气不好/暴躁,没有恒心/三分钟热度,没有特别恨自己的地方", cat:"恐惧与阴影" },
+  { q:"如果你能改变自己的一件事，那会是什么？", opts:"身材/健康,性格/心态,能力/技能,人际关系,过去的某个选择/决定,现在的生活状态,不想改变什么", cat:"恐惧与阴影" },
+  { q:"你最近一次羡慕或嫉妒别人是因为什么？", opts:"别人做到了我做不到的事,别人过上了我想要的生活,别人比我更受欢迎,别人有更好的家庭/出身,别人活得比我自由,最近没有过羡慕嫉妒", cat:"恐惧与阴影" },
+  { q:"如果最害怕的事发生，你会如何活下去？", opts:"不知道能不能活下去,会崩溃但会慢慢好起来,为了在乎的人会撑下去,已经经历过所以知道可以撑过去,从来没有认真想过", cat:"恐惧与阴影" },
+  { q:"死亡对你来说意味着什么？", opts:"消失/什么都没有,解脱/安宁,提醒自己活着要珍惜,轮回/新的开始,还没想清楚,不愿意去想", cat:"恐惧与阴影" },
+  // === Level 6: 潜能与使命 ===
+  { q:"你认为最完美的幸福是什么样的？", opts:"事业和家庭都兼顾,做自己喜欢的事有钱有闲,和爱的人在一起健康平安,被理解被接纳,自由自在不被束缚,随时可以停下来休息,内心平静没有焦虑", cat:"潜能与使命" },
+  { q:"你做什么时会进入心流状态，忘记时间？", opts:"学习新技能,阅读,运动,创作/写作,打游戏,深度聊天,做手工/修理东西,听音乐", cat:"潜能与使命" },
+  { q:"你一直没勇气开始的梦想是什么？", opts:"开一家店/咖啡馆,写一本书/做自媒体,学一门艺术/乐器,去另一个城市/国家生活,转行做完全不同的工作,公开表演/演讲,创业,环游世界", cat:"潜能与使命" },
+  { q:"对你而言最大的奢侈是什么？", opts:"睡到自然醒,说走就走的旅行,不用为钱焦虑的选择权,可以浪费时间不觉得愧疚,独处不被打扰的时间,被爱的人完全理解,什么都可以不做的自由", cat:"潜能与使命" },
+  { q:"如果此刻能彻底改变生活，你会改变什么？", opts:"换城市/搬家,换工作/转行,结束某段关系,开始新的学习/深造,彻底改变作息/生活方式,改变自己的心态,什么都不想改变现在挺好", cat:"潜能与使命" },
+  { q:"你5年后的理想生活状态是怎样的？", opts:"有房有车有存款,在做喜欢的工作,身边有爱的人,自由安排时间,健康平安就好,比现在好一点点就行,完全没想到那么远", cat:"潜能与使命" },
+  { q:"如果明天就会失忆，你最想记住什么？", opts:"家人的脸,生命中最快乐的瞬间,自己的名字和身份,学过的知识技能,答应过别人的承诺,什么都不想忘记", cat:"潜能与使命" },
+  { q:"你希望墓志铭上写什么？", opts:"一个温暖的人,一个有趣的人,一个认真活过的人,一个改变了什么的人,一个普通人已尽力,还没想好", cat:"潜能与使命" },
+  { q:"如果有转世，你希望成为什么样的人或物？", opts:"还是现在的自己但更聪明,一个完全不同的人重新开始,一只自由飞翔的鸟,一棵活很久的树,一只被宠爱的宠物,不想转世", cat:"潜能与使命" },
+  // === Level 7: 存在与本质 ===
+  { q:"你是谁？除名字和社会角色外，如何定义自己？", opts:"一个正在寻找答案的人,一个认真对待生活的人,一个善良但不够勇敢的人,一个矛盾纠结的人,一个有趣但有点孤独的人,还没想清楚自己是谁", cat:"存在与本质" },
+  { q:"如果发现人生毫无意义，你会怎么做？", opts:"自己创造意义,继续按部就班活着,去体验一切可能的事,帮助他人找到意义,会陷入长时间的困惑,这个问题太沉重了", cat:"存在与本质" },
+  { q:"你相信自由意志吗？还是认为一切早已注定？", opts:"相信自由意志，一切由自己决定,不相信，命运早已注定,半信半疑有些能选有些不能,不在乎这个问题的答案", cat:"存在与本质" },
+  { q:"你是否存在'真实的自己'？如何找到它？", opts:"存在，独处的时候最真实,存在，和真正信任的人在一起时最真实,存在，但在社会压力下很难保持,不确定是否存在,还在寻找中", cat:"存在与本质" },
+  { q:"你愿为集体利益牺牲个人吗？界限在哪里？", opts:"愿意，但不能伤害家人,愿意，但要有合理的回报,不愿意，个人大于集体,看情况，看这个集体值不值得,从来没想过", cat:"存在与本质" },
+  { q:"痛苦是必须消除的，还是成长的途径？", opts:"痛苦是成长的途径，值得经历,痛苦应该尽量消除/减少,两者都有道理,取决于痛苦的种类和程度,还没想清楚", cat:"存在与本质" },
+  { q:"如果宇宙有答案，你最想问的问题是什么？", opts:"我活着的意义是什么,人死后去了哪里,世界上有绝对真理吗,我做的选择是对是错,爱到底是什么,是不是每个人都会遇到对的人,什么时候才能不焦虑", cat:"存在与本质" },
+  { q:"你觉得自己为何存在？", opts:"还没找到答案,为了体验生命,为了帮助别人,为了创造点什么,为了爱我的人,为了让自己开心", cat:"存在与本质" },
+  { q:"你愿意被遗忘吗？", opts:"不愿意，希望留下痕迹,愿意，不被记得也可以,矛盾，既想又不想,至少希望被爱的人记住,无所谓", cat:"存在与本质" },
+  { q:"如果下一秒就会消失，你最大的遗憾是什么？", opts:"没有好好陪伴家人,没有勇敢追求喜欢的事,没有活成自己想要的样子,浪费了太多时间,没有学会爱自己,没有去看看更大的世界,没有实现自己的梦想", cat:"存在与本质" },
+  { q:"你相信灵魂或来世吗？", opts:"相信有灵魂,相信有来世/轮回,不相信，死了就什么都没有,不确定/觉得都有可能,希望有但不确定", cat:"存在与本质" },
+  { q:"如果全世界只剩你一人，你会做什么？", opts:"找个地方安静生活,疯掉/崩溃,继续正常过日子,去完成未竟的梦想,探索以前不能去的地方,从未想过这个问题", cat:"存在与本质" },
+  { q:"回答完所有问题后，你对自己有什么新认识？", opts:"比想象中更了解自己了,发现了很多以前没意识到的矛盾,有点意外原来我是这样的人,感觉还需要更深入地思考,没什么特别的新认识", cat:"存在与本质" },
+  { q:"如果只能保留一个问题，你会保留哪个？", opts:"你是谁——关于身份的定义,你最怕什么——关于恐惧,你的钱花在哪——关于价值观,你最大的遗憾是什么——关于珍惜,未来想过怎样的生活——关于方向,每个问题都很重要无法取舍", cat:"存在与本质" },
+  { q:"如果在世的最后一天，你想怎么度过？", opts:"和家人安静地待在一起,去最喜欢的那个地方,听最喜欢的音乐吃最喜欢的食物,把想说的话说完想见的人见一面,写一封信留给世界,像平常一样过完这最后一天", cat:"存在与本质" },
+  { q:"你最想对十年后的自己说什么？", opts:"你过得好吗,希望你还在坚持,谢谢你曾经的坚持,别对自己太狠了,相信你已经找到答案了,到那时候再告诉你", cat:"存在与本质" },
+  { q:"用一句话总结你的人生哲学", opts:"尽力就好不强求,善良是一切的底线,体验比结果重要,做喜欢的事和喜欢的人在一起,永远不要停止学习成长,活着本身就是意义,还没找到自己的人生哲学", cat:"存在与本质" }
+];
+
+
+const BACKUP_VERSION = 2;
+const CATEGORY_LIST = ["基础认知", "行为习惯", "情绪思维", "价值观与选择", "关系与互动", "恐惧与阴影", "潜能与使命", "存在与本质", "未分类"];
+// ========== STATE ==========
+let currentCat = null;
+let selectedOptions = new Set();
+let customOptions = {}; // { catId: [custom strings] }
+
+// Load data from localStorage
+function loadData() { try { const raw = localStorage.getItem('self_explore_records'); return raw ? JSON.parse(raw) : []; } catch { return []; } }
+function saveData(data) { localStorage.setItem('self_explore_records', JSON.stringify(data)); }
+function loadCustomOptions() { try { const raw = localStorage.getItem('self_explore_custom_opts'); return raw ? JSON.parse(raw) : {}; } catch { return {}; } }
+function saveCustomOptions(data) { localStorage.setItem('self_explore_custom_opts', JSON.stringify(data)); }
+function loadBackupQuestions() {
+  try {
+    const ver = localStorage.getItem('self_explore_backup_ver');
+    const raw = localStorage.getItem('self_explore_backup_qs');
+    if (String(ver) !== String(BACKUP_VERSION) || !raw) {
+      localStorage.setItem('self_explore_backup_ver', String(BACKUP_VERSION));
+      saveBackupQuestions(DEFAULT_BACKUP);
+      return [...DEFAULT_BACKUP];
+    }
+    const data = JSON.parse(raw);
+    if (!Array.isArray(data) || data.length === 0) {
+      saveBackupQuestions(DEFAULT_BACKUP);
+      return [...DEFAULT_BACKUP];
+    }
+    return data;
+  } catch { saveBackupQuestions(DEFAULT_BACKUP); return [...DEFAULT_BACKUP]; }
+}
+function saveBackupQuestions(data) { localStorage.setItem('self_explore_backup_qs', JSON.stringify(data)); }
+function loadPromotedQuestions() {
+  try { const raw = localStorage.getItem('self_explore_promoted_qs'); return raw ? JSON.parse(raw) : []; } catch { return []; }
+}
+function savePromotedQuestions(data) { localStorage.setItem('self_explore_promoted_qs', JSON.stringify(data)); }
+
+function getActiveQuestions() {
+  const promoted = loadPromotedQuestions();
+  return [...QUESTIONS, ...promoted];
+}
+
+// ========== RENDER CATEGORY GRID ==========
+function renderCategories() {
+  const grid = document.getElementById('catGrid');
+  const records = loadData();
+  const counts = {};
+  records.forEach(r => { counts[r.qid] = (counts[r.qid]||0) + 1; });
+  const allQs = getActiveQuestions();
+
+  grid.innerHTML = allQs.map(c => `
+    <div class="cat-card" onclick="openCategory(${c.id})" style="${c.source==='promoted'?'border-left:3px solid var(--purple)':''}">
+      <div class="num">${c.source==='promoted'?'📌 Q':'Q'}${c.id}</div>
+      <div class="q-text">${c.q}</div>
+      <div class="count-badge ${counts[c.id]?'has-record':''}">${counts[c.id]?counts[c.id]+' 条记录':'未记录'}</div>
+    </div>
+  `).join('');
+}
+
+// ========== DETAIL VIEW ==========
+function openCategory(id) {
+  currentCat = id;
+  selectedOptions.clear();
+  const cat = getActiveQuestions().find(c => c.id === id);
+  if (!cat) return;
+  document.getElementById('detailQ').textContent = (cat.source==='promoted'?'📌 ':'') + `Q${id}. ${cat.q}`;
+  document.getElementById('pageExplore').style.display = 'none';
+  document.getElementById('detailView').classList.add('show');
+  document.getElementById('noteInput').value = '';
+  document.getElementById('saveMsg').classList.remove('show');
+
+  customOptions[id] = loadCustomOptions()[id] || [];
+  renderOptions(cat);
+  renderRecords(id);
+}
+
+function renderOptions(cat) {
+  const area = document.getElementById('optionsArea');
+  let html = '';
+  cat.options.forEach(opt => {
+    html += `<span class="option-chip" data-opt="${opt}" onclick="toggleOpt(this,'${opt.replace(/'/g,"\\'")}')">${opt}</span>`;
+  });
+  html += `<span class="option-chip other" data-opt="__other__" onclick="toggleOpt(this,'__other__')">➕ 其他（自定义文字）</span>`;
+  (customOptions[cat.id] || []).forEach(copt => {
+    html += `<span class="option-chip custom" data-opt="${copt}" onclick="toggleOpt(this,'${copt.replace(/'/g,"\\'")}')">${copt} ✏️</span>`;
+  });
+  area.innerHTML = html;
+}
+
+function toggleOpt(el, opt) {
+  if (selectedOptions.has(opt)) { selectedOptions.delete(opt); el.classList.remove('selected'); }
+  else { selectedOptions.add(opt); el.classList.add('selected'); }
+}
+
+function addCustomOption() {
+  const input = document.getElementById('customInput');
+  const val = input.value.trim();
+  if (!val) return;
+  if (!customOptions[currentCat]) customOptions[currentCat] = [];
+  customOptions[currentCat].push(val);
+  const allCustom = loadCustomOptions(); allCustom[currentCat] = customOptions[currentCat]; saveCustomOptions(allCustom);
+  input.value = '';
+  const cat = getActiveQuestions().find(c => c.id === currentCat);
+  renderOptions(cat);
+  setTimeout(() => {
+    const chips = document.querySelectorAll('.option-chip.custom');
+    chips[chips.length-1]?.classList.add('selected');
+    selectedOptions.add(val);
+  }, 50);
+}
+
+function saveRecord() {
+  if (selectedOptions.size === 0) { alert('请至少选择一个答案'); return; }
+  const cat = getActiveQuestions().find(c=>c.id===currentCat);
+  if (!cat) return;
+  const note = document.getElementById('noteInput').value.trim();
+  const records = loadData();
+  records.push({
+    id: Date.now(), qid: currentCat, q: cat.q,
+    options: [...selectedOptions], note: note,
+    time: new Date().toLocaleString('zh-CN')
+  });
+  saveData(records);
+  document.getElementById('saveMsg').classList.add('show');
+  setTimeout(() => document.getElementById('saveMsg').classList.remove('show'), 2000);
+  selectedOptions.clear();
+  document.querySelectorAll('.option-chip.selected').forEach(el => el.classList.remove('selected'));
+  document.getElementById('noteInput').value = '';
+  renderCategories(); renderRecords(currentCat); updateTotalStat();
+}
+
+function renderRecords(qid) {
+  const list = document.getElementById('recordsList');
+  const records = loadData().filter(r => r.qid === qid).reverse();
+  if (records.length === 0) { list.innerHTML = '<div class="empty-state"><div class="icon">📝</div>还没有记录，选一个答案开始吧</div>'; return; }
+  list.innerHTML = '<div class="section-label">历史记录</div>' +
+    records.map(r => `
+      <div class="record-item">
+        <button class="del-btn" onclick="deleteRecord(${r.id},${qid})">×</button>
+        <div class="r-option">${Array.from(r.options).join(' · ')}</div>
+        ${r.note ? `<div class="r-note">${r.note}</div>` : ''}
+        <div class="r-time">${r.time}</div>
+      </div>`).join('');
+}
+
+function deleteRecord(id, qid) {
+  if (!confirm('确定删除这条记录？')) return;
+  saveData(loadData().filter(r => r.id !== id));
+  renderCategories(); renderRecords(qid); updateTotalStat();
+}
+
+function goBack() {
+  document.getElementById('detailView').classList.remove('show');
+  document.getElementById('pageExplore').style.display = 'block';
+  currentCat = null;
+}
+
+// ========== PAGES ==========
+function showPage(page) {
+  ['pageExplore','detailView','pageRecord','pageLibrary','pageSummary'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.contains('detail-view') ? el.classList.remove('show') : (el.style.display = 'none');
+  });
+  ['btnExplore','btnRecord','btnLibrary','btnSummary'].forEach(id => document.getElementById(id).classList.remove('active'));
+
+  if (page === 'explore') { document.getElementById('pageExplore').style.display = 'block'; document.getElementById('btnExplore').classList.add('active'); renderCategories(); }
+  else if (page === 'record') { document.getElementById('pageRecord').style.display = 'block'; document.getElementById('btnRecord').classList.add('active'); renderAllRecords(); }
+  else if (page === 'library') { document.getElementById('pageLibrary').style.display = 'block'; document.getElementById('btnLibrary').classList.add('active'); renderCatTabs(); renderLibrary(); }
+  else if (page === 'summary') { document.getElementById('pageSummary').style.display = 'block'; document.getElementById('btnSummary').classList.add('active'); renderSummary(); }
+}
+
+// ========== LIBRARY PAGE ==========
+let currentCatFilter = '全部';
+
+function renderCatTabs() {
+  const qs = loadBackupQuestions();
+  const counts = {};
+  counts['全部'] = qs.length;
+  qs.forEach(item => { const c = item.cat || '未分类'; counts[c] = (counts[c]||0) + 1; });
+  const tabs = document.getElementById('catTabs');
+  tabs.innerHTML = CATEGORY_LIST.map(c => {
+    if (!counts[c]) return '';
+    const act = currentCatFilter === c ? ' active' : '';
+    return `<button class="cat-tab${act}" onclick="currentCatFilter='${c}';renderCatTabs();renderLibrary();">${c} (${counts[c]})</button>`;
+  }).join('') + `<button class="cat-tab${currentCatFilter==='全部'?' active':''}" onclick="currentCatFilter='全部';renderCatTabs();renderLibrary();">全部 (${qs.length})</button>`;
+}
+
+function renderLibrary() {
+  const list = document.getElementById('libList');
+  const search = document.getElementById('libSearch').value.toLowerCase();
+  let qs = loadBackupQuestions();
+  const promoted = loadPromotedQuestions();
+
+  if (currentCatFilter !== '全部') qs = qs.filter(item => (item.cat || '未分类') === currentCatFilter);
+  if (search) qs = qs.filter(item => item.q.toLowerCase().includes(search));
+  document.getElementById('libCount').textContent = `共 ${qs.length} 题`;
+  document.getElementById('libAddForm').style.display = 'none';
+
+  if (qs.length === 0) {
+    list.innerHTML = '<div class="empty-state"><div class="icon">🔍</div>' + (search||currentCatFilter!=='全部' ? '没有匹配的题目' : '题库为空，添加第一道题吧') + '</div>';
+    return;
+  }
+
+  // Get global indices by searching original array
+  const allQs = loadBackupQuestions();
+  let html = '';
+  qs.forEach((item) => {
+    const origIdx = allQs.findIndex(x => x.q === item.q && x.opts === item.opts);
+    const opts = item.opts.split(',').map(o => o.trim()).filter(o => o);
+    const isPromoted = promoted.some(p => p.libIdx === origIdx && p.libQuestion === item.q);
+    const cat = item.cat || '未分类';
+    html += `
+      <div class="lib-item" id="lib-item-${origIdx}">
+        <div class="lib-num">#${origIdx + 1}${isPromoted ? '<span class="promoted-badge">已提大</span>' : ''}</div>
+        <div class="lib-body">
+          <div class="lib-q">${item.q}<span class="lib-cat-badge">${cat}</span></div>
+          <div class="lib-opts">${opts.slice(0, 8).map(o => `<span class="lib-opt-tag">${o}</span>`).join('')}${opts.length > 8 ? `<span class="lib-opt-tag">+${opts.length - 8} 更多</span>` : ''}</div>
+        </div>
+        <div class="lib-actions">
+          ${isPromoted ? '<button disabled style="opacity:.5">已提大</button>' : '<button class="promote" onclick="promoteQuestion('+origIdx+')">⬆ 提成大类</button>'}
+          <button onclick="editLibQuestion('+origIdx+')">✏️ 编辑</button>
+          <button class="danger" onclick="deleteLibQuestion('+origIdx+')">🗑 删除</button>
+        </div>
+      </div>`;
+  });
+  list.innerHTML = html;
+}
+
+function addLibQuestion() {
+  const q = document.getElementById('newLibQ').value.trim();
+  const opts = document.getElementById('newLibOpts').value.trim();
+  const cat = document.getElementById('newLibCat').value;
+  if (!q) { alert('请输入问题'); return; }
+  if (!opts) { alert('请输入至少一个选项'); return; }
+  const qs = loadBackupQuestions();
+  qs.push({ q, opts, cat });
+  saveBackupQuestions(qs);
+  document.getElementById('newLibQ').value = '';
+  document.getElementById('newLibOpts').value = '';
+  document.getElementById('newLibCat').value = '未分类';
+  renderCatTabs();
+  renderLibrary();
+}
+
+function editLibQuestion(idx) {
+  const item = document.getElementById('lib-item-' + idx);
+  if (!item) return;
+  if (item.classList.contains('editing')) {
+    const qInput = item.querySelector('.lib-q-edit');
+    const oInput = item.querySelector('.lib-opts-edit');
+    const cInput = item.querySelector('.lib-cat-edit');
+    if (!qInput || !oInput) return;
+    const newQ = qInput.value.trim();
+    const newOpts = oInput.value.trim();
+    const newCat = cInput ? cInput.value : '未分类';
+    if (!newQ || !newOpts) { alert('问题和选项不能为空'); return; }
+    const qs = loadBackupQuestions();
+    qs[idx] = { q: newQ, opts: newOpts, cat: newCat };
+    saveBackupQuestions(qs);
+    renderCatTabs();
+    renderLibrary();
+  } else {
+    const qs = loadBackupQuestions();
+    const itemData = qs[idx];
+    const curCat = itemData.cat || '未分类';
+    item.classList.add('editing');
+    item.querySelector('.lib-body').innerHTML = `
+      <input class="lib-q-edit" value="${itemData.q.replace(/"/g,'&quot;')}">
+      <input class="lib-opts-edit" value="${itemData.opts.replace(/"/g,'&quot;')}" placeholder="选项用逗号分隔">
+      <select class="lib-cat-edit" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;outline:none;">
+        ${CATEGORY_LIST.map(c => `<option value="${c}"${c===curCat?' selected':''}>${c}</option>`).join('')}
+      </select>
+    `;
+    item.querySelector('.lib-actions').innerHTML = `
+      <button class="save-edit" onclick="editLibQuestion(${idx})">💾 保存</button>
+      <button onclick="renderLibrary()">取消</button>
+    `;
+  }
+}
+
+function deleteLibQuestion(idx) {
+  if (!confirm('确定删除这道题目？')) return;
+  const qs = loadBackupQuestions();
+  qs.splice(idx, 1);
+  saveBackupQuestions(qs);
+  renderLibrary();
+}
+
+function promoteQuestion(idx) {
+  if (!confirm('确定将这道题提成大类？它会出现在探索页面上，可以直接回答。')) return;
+  const qs = loadBackupQuestions();
+  const item = qs[idx];
+  if (!item) return;
+  const opts = item.opts.split(',').map(o => o.trim()).filter(o => o);
+  if (opts.length === 0) { alert('这道题没有选项，无法提成大类。请先编辑添加选项。'); return; }
+
+  const promoted = loadPromotedQuestions();
+  const newId = 100 + promoted.length;
+  promoted.push({
+    id: newId,
+    q: item.q,
+    options: opts,
+    source: 'promoted',
+    libIdx: idx,
+    libQuestion: item.q
+  });
+  savePromotedQuestions(promoted);
+  alert('已提成大类！去探索页面看看吧。');
+  renderLibrary();
+  renderCategories();
+}
+
+function resetBackupLibrary() {
+  if (!confirm('确定恢复默认题库？你自定义添加/编辑/删除的题目会被覆盖，但不影响已提成大类的题目。')) return;
+  saveBackupQuestions([...DEFAULT_BACKUP]);
+  renderLibrary();
+}
+
+// ========== ALL RECORDS PAGE ==========
+function renderAllRecords() {
+  const container = document.getElementById('allRecordsList');
+  const records = loadData().reverse();
+  if (records.length === 0) { container.innerHTML = '<div class="empty-state"><div class="icon">📭</div>还没有任何记录<br><br>去探索页面回答一些问题吧</div>'; return; }
+  container.innerHTML = records.map(r => `
+    <div class="record-item">
+      <div class="r-option">Q${r.qid}. ${r.q.substring(0,30)}${r.q.length>30?'...':''}</div>
+      <div class="r-note">→ ${Array.from(r.options).join(' · ')}</div>
+      ${r.note ? `<div class="r-note" style="margin-top:4px;">📝 ${r.note}</div>` : ''}
+      <div class="r-time">${r.time}</div>
+    </div>`).join('');
+}
+
+// ========== SUMMARY PAGE ==========
+function renderSummary() { /* unchanged summary logic from original */ 
+  const records = loadData();
+  document.getElementById('summaryStats').innerHTML = `
+    <div class="stat-mini"><div class="label">总记录数</div><div class="value">${records.length}</div></div>
+    <div class="stat-mini"><div class="label">已覆盖问题</div><div class="value">${new Set(records.map(r=>r.qid)).size} / ${getActiveQuestions().length}</div></div>
+    <div class="stat-mini"><div class="label">首次记录</div><div class="value">${records.length?formatDate(Math.min(...records.map(r=>r.id))):'--'}</div></div>
+    <div class="stat-mini"><div class="label">最近记录</div><div class="value">${records.length?formatDate(Math.max(...records.map(r=>r.id))):'--'}</div></div>
+  `;
+  const tagMap = {};
+  records.forEach(r => { r.options.forEach(opt => { opt.split(/[\/\s、]+/).filter(w => w.length >= 2).forEach(w => { tagMap[w] = (tagMap[w]||0) + 1; }); }); if (r.note) { r.note.split(/[，。！？,\s]+/).filter(w => w.length >= 2).forEach(w => { tagMap[w] = (tagMap[w]||0) + 0.5; }); } });
+  const sortedTags = Object.entries(tagMap).sort((a,b) => b[1]-a[1]).slice(0, 24);
+  const tagsHtml = sortedTags.map(([tag, count]) => { let cls = count >= 3 ? 'personality-tag' : count >= 1.5 ? 'personality-tag neutral' : 'personality-tag warn'; return `<span class="${cls}">${tag}${count>=3?' ×'+Math.round(count):''}</span>`; }).join('');
+  document.getElementById('personalityTags').innerHTML = tagsHtml || '<span style="color:var(--text-dim)">回答更多问题后会生成画像标签</span>';
+  document.getElementById('profileDesc').innerHTML = generateProfileDesc(records, sortedTags);
+  document.getElementById('insightsArea').innerHTML = generateInsights(records);
+}
+
+function formatDate(ts) { return new Date(ts).toLocaleDateString('zh-CN',{month:'short',day:'numeric'}); }
+
+function generateProfileDesc(records, tags) {
+  if (records.length < 3) return '继续回答更多问题，我会帮你描绘更准确的个性画像 🎨';
+  const byQid = {}; records.forEach(r => { byQid[r.qid] = byQid[r.qid] || []; byQid[r.qid].push(r); });
+  const insights = [];
+  if (byQid[4]) { const o = byQid[4].flatMap(r=>r.options); if (o.some(x=>x.includes('旅行')||x.includes('体验'))) insights.push('你是一个重视**体验大于物质**的人，钱花在「经历」上让你最满足。'); if (o.some(x=>x.includes('电子')||x.includes('数码'))) insights.push('你对**科技产品和数字装备**情有独钟。'); if (o.some(x=>x.includes('存钱')||x.includes('理财'))) insights.push('你有较强的**安全意识**，储蓄和理财给你带来内心的踏实感。'); if (o.some(x=>x.includes('美食')||x.includes('餐厅')||x.includes('外卖'))) insights.push('你是典型的**吃货型消费者**，「吃得好」是生活品质的核心指标。'); }
+  if (byQid[3]) { const o = byQid[3].flatMap(r=>r.options); if (o.some(x=>x.includes('一个人')||x.includes('独处'))) insights.push('你在社交上是**内向充能型**，独处是你的能量来源而非消耗。'); if (o.some(x=>x.includes('小圈子')||x.includes('熟人'))) insights.push('你偏好**深度关系胜过广度社交**。'); if (o.some(x=>x.includes('应付'))) insights.push('你具备不错的**社交弹性**，适应性很强。'); }
+  if (byQid[7]) { const o = byQid[7].flatMap(r=>r.options); if (o.some(x=>x.includes('创作')||x.includes('内容'))) insights.push('你骨子里是个**创作者**，表达欲和创造力是你工作的核心驱动力。'); if (o.some(x=>x.includes('技术')||x.includes('代码'))) insights.push('你是一个**逻辑驱动型**的人。'); if (o.some(x=>x.includes('自由'))) insights.push('你高度重视**自主权**，不喜欢被约束。'); if (o.some(x=>x.includes('稳定'))) insights.push('你对**确定性**有较高需求。'); }
+  if (byQid[12]) { const o = byQid[12].flatMap(r=>r.options); if (o.some(x=>x.includes('证明'))) insights.push('你内心深处有一种**证明自己的渴望**。'); if (o.some(x=>x.includes('底气')||x.includes('家人'))) insights.push('你赚钱的动力源于**责任感和爱**。'); if (o.some(x=>x.includes('自由'))) insights.push('你看重的是**金钱背后的选择权**，而不是数字本身。'); }
+  if (byQid[16]) { const o = byQid[16].flatMap(r=>r.options); if (o.some(x=>x.includes('靠谱'))) insights.push('你把**可靠性**看作最重要的个人品质。'); if (o.some(x=>x.includes('清醒'))) insights.push('你追求的是**内在的清晰度**。'); if (o.some(x=>x.includes('光芒')||x.includes('厉害'))) insights.push('你有**展现自我的愿望**。'); }
+  if (byQid[20]) { const o = byQid[20].flatMap(r=>r.options); if (o.some(x=>x.includes('事业'))) insights.push('目前阶段**事业发展**是你生活的重心。'); if (o.some(x=>x.includes('热爱')||x.includes('烟火气'))) insights.push('你向往的是**有温度的生活**。'); if (o.some(x=>x.includes('自由'))) insights.push('**自由**是你对未来生活的核心期待。'); }
+  if (byQid[15]) { const o = byQid[15].flatMap(r=>r.options); if (o.some(x=>x.includes('韧性')||x.includes('爬起来'))) insights.push('你最大的优势是**抗挫折能力**。'); if (o.some(x=>x.includes('善良')||x.includes('真诚'))) insights.push('你以**善良和真诚**为傲。'); if (o.some(x=>x.includes('寻找'))) insights.push('你可能正在经历一段**自我探索期**，这本身就是一种勇气。'); }
+  if (insights.length === 0) return '继续回答更多问题，我会帮你描绘更准确的个性画像 🎨';
+  return insights.join('<br><br>');
+}
+
+function generateInsights(records) {
+  if (records.length < 2) return '';
+  const byQid = {}; records.forEach(r => { byQid[r.qid] = byQid[r.qid] || []; byQid[r.qid].push(r); });
+  let html = '<h3 style="margin:24px 0 14px;font-size:17px;">🔍 深度洞察</h3>';
+  const checks = [];
+  if (byQid[3] && byQid[11]) { const s = byQid[3].flatMap(r=>r.options).join(''); const a = byQid[11].flatMap(r=>r.options).join(''); if ((s.includes('一个人')||s.includes('独处')) && (a.includes('刷手机')||a.includes('追剧')||a.includes('发呆'))) checks.push({t:'🏠 社交与独处模式',d:'你喜欢独处，但独处时倾向于**被动式休闲**（刷手机/追剧）。试试在独处时加入一些主动创造的活动（写作/运动/学习），可能会让你的独处质量更高。'}); }
+  if (byQid[4] && byQid[12]) { const sp = byQid[4].flatMap(r=>r.options).join(''); const w = byQid[12].flatMap(r=>r.options).join(''); if (sp.includes('存钱')&&sp.includes('理财') && w.includes('证明')) checks.push({t:'💰 金钱的矛盾',d:'你的消费行为偏保守（存钱/理财），但赚钱动力却包含「证明自己」。这意味着你可能**对自己不够自信**，需要通过积累来建立安全感。'}); }
+  if (byQid[14]) { const r = byQid[14].flatMap(r=>r.options).join(''); if (r.includes('硬扛') || r.includes('什么都不做')) checks.push({t:'💊 情绪恢复策略',d:'你倾向于**独自消化负面情绪**。偶尔试着向信任的人倾诉——分担痛苦不会让你变弱。'}); if (r.includes('大吃') && r.includes('睡觉')) checks.push({t:'🍜 情绪恢复策略',d:'你通过**基本生理需求**（吃/睡）来恢复情绪。这是最原始也最有效的方式之一。'}); }
+  checks.forEach(c => { html += `<div class="insight-block"><h4>${c.t}</h4><p>${c.d}</p></div>`; });
+  const allOpts = {}; records.forEach(r => { r.options.forEach(o => { allOpts[o] = (allOpts[o]||0)+1; }); });
+  const topOpts = Object.entries(allOpts).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  if (topOpts.length > 0) { html += '<h3 style="margin:24px 0 14px;font-size:17px;">📊 高频选择 TOP 8</h3><div class="tag-cloud">'; topOpts.forEach(([opt,count]) => { html += `<span class="personality-tag">${opt} (${count}次)</span>`; }); html += '</div>'; }
+  if (records.length >= 5) { const dates = records.map(r => new Date(r.time).toLocaleDateString('zh-CN')); const u = new Set(dates).size; html += `<div class="insight-block" style="margin-top:16px;"><h4>📅 使用习惯</h4><p>你在 <strong>${u}</strong> 天内记录了 <strong>${records.length}</strong> 条回答。${u >= 3 ? '保持这个频率，持续记录会让你的自我认知越来越清晰。' : '建议养成定期记录的习惯，每周回答2-3个问题就能逐渐看清自己的模式。'}</p></div>`; }
+  return html;
+}
+
+// ========== INIT ==========
+function updateTotalStat() { document.getElementById('totalStat').textContent = loadData().length + ' 条记录'; }
+
+// Ensure backup questions exist on first load
+if (!localStorage.getItem('self_explore_backup_qs')) { saveBackupQuestions([...DEFAULT_BACKUP]); }
+
+renderCategories();
+updateTotalStat();
+</script>
+</body>
+</html>
